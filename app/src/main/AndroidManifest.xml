@@ -38,9 +38,7 @@
             android:configChanges="orientation|screenSize"
             android:exported="true"
             android:screenOrientation="locked"
-            android:theme="@style/Theme.AppCompat.NoActionBar">
-
-        </activity>
+            android:theme="@style/Theme.AppCompat.NoActionBar"></activity>
         <!--
          This tag indicates that this application requires ARCore.  This results in the Google Play
          Store downloading and installing ARCore along with the application.
@@ -65,6 +63,11 @@
         </activity>
         <activity
             android:name=".SurfacesActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
+
+        </activity>
+        <activity
+            android:name=".OrientedPointsActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar">
 
         </activity>

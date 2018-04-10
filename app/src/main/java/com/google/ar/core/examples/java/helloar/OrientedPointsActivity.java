@@ -41,8 +41,7 @@ import java.util.ArrayList;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-
-public class SurfacesActivity extends AppCompatActivity implements GLSurfaceView.Renderer {
+public class OrientedPointsActivity extends AppCompatActivity implements GLSurfaceView.Renderer {
     private static final String TAG = HelloArActivityFULL.class.getSimpleName();
 
     // Rendering. The Renderers are created here, and initialized when the GL surface is created.
@@ -58,7 +57,7 @@ public class SurfacesActivity extends AppCompatActivity implements GLSurfaceView
     private final BackgroundRenderer backgroundRenderer = new BackgroundRenderer();
     private final ObjectRenderer virtualObject = new ObjectRenderer();
     private final ObjectRenderer virtualObjectShadow = new ObjectRenderer();
-    private final PlaneRenderer planeRenderer = new PlaneRenderer();
+
     private final PointCloudRenderer pointCloudRenderer = new PointCloudRenderer();
 
     // Temporary matrix allocated here to reduce number of allocations for each frame.
@@ -200,16 +199,16 @@ public class SurfacesActivity extends AppCompatActivity implements GLSurfaceView
         try {
             // Create the texture and pass it to ARCore session to be filled during update().
             backgroundRenderer.createOnGlThread(/*context=*/ this);
-            planeRenderer.createOnGlThread(/*context=*/ this, "models/trigrid.png");
+            //planeRenderer.createOnGlThread(/*context=*/ this, "models/trigrid.png");
             pointCloudRenderer.createOnGlThread(/*context=*/ this);
 
-            //virtualObject.createOnGlThread(/*context=*/ this, "models/andy.obj", "models/andy.png");
-            //virtualObject.setMaterialProperties(0.0f, 2.0f, 0.5f, 6.0f);
+            virtualObject.createOnGlThread(/*context=*/ this, "models/andy.obj", "models/andy.png");
+            virtualObject.setMaterialProperties(0.0f, 2.0f, 0.5f, 6.0f);
 
-            //virtualObjectShadow.createOnGlThread(
-          ///*context=*/ this, "models/andy_shadow.obj", "models/andy_shadow.png");
-            //virtualObjectShadow.setBlendMode(ObjectRenderer.BlendMode.Shadow);
-            //virtualObjectShadow.setMaterialProperties(1.0f, 0.0f, 0.0f, 1.0f);
+            virtualObjectShadow.createOnGlThread(
+            /*context=*/ this, "models/andy_shadow.obj", "models/andy_shadow.png");
+            virtualObjectShadow.setBlendMode(ObjectRenderer.BlendMode.Shadow);
+            virtualObjectShadow.setMaterialProperties(1.0f, 0.0f, 0.0f, 1.0f);
 
         } catch (IOException e) {
             Log.e(TAG, "Failed to read an asset file", e);
@@ -246,35 +245,35 @@ public class SurfacesActivity extends AppCompatActivity implements GLSurfaceView
             // Handle taps. Handling only one tap per frame, as taps are usually low frequency
             // compared to frame rate.
 
-//            MotionEvent tap = tapHelper.poll();
-//            if (tap != null && camera.getTrackingState() == TrackingState.TRACKING) {
-//                for (HitResult hit : frame.hitTest(tap)) {
-//                    // Check if any plane was hit, and if it was hit inside the plane polygon
-//                    Trackable trackable = hit.getTrackable();
-//
-//                    // Creates an anchor if a plane or an oriented point was hit.
-//                    if ((trackable instanceof Plane && ((Plane) trackable).isPoseInPolygon(hit.getHitPose()))
-//                            || (trackable instanceof Point
-//                            && ((Point) trackable).getOrientationMode()
-//                            == Point.OrientationMode.ESTIMATED_SURFACE_NORMAL)) {
-//                        // Hits are sorted by depth. Consider only closest hit on a plane or oriented point.
-//                        // Cap the number of objects created. This avoids overloading both the
-//                        // rendering system and ARCore.
-//                        if (anchors.size() >= 20) {
-//                            anchors.get(0).detach();
-//                            anchors.remove(0);
-//                        }
-//
-//                        // Adding an Anchor tells ARCore that it should track this position in
-//                        // space. This anchor is created on the Plane to place the 3D model
-//                        // in the correct position relative both to the world and to the plane.
-//
-//                        anchors.add(hit.createAnchor());
-//
-//                        break;
-//                    }
-//                }
-//            }
+            MotionEvent tap = tapHelper.poll();
+            if (tap != null && camera.getTrackingState() == TrackingState.TRACKING) {
+                for (HitResult hit : frame.hitTest(tap)) {
+                    // Check if any plane was hit, and if it was hit inside the plane polygon
+                    Trackable trackable = hit.getTrackable();
+
+                    // Creates an anchor if a plane or an oriented point was hit.
+                    if ((trackable instanceof Plane && ((Plane) trackable).isPoseInPolygon(hit.getHitPose()))
+                            || (trackable instanceof Point
+                            && ((Point) trackable).getOrientationMode()
+                            == Point.OrientationMode.ESTIMATED_SURFACE_NORMAL)) {
+                        // Hits are sorted by depth. Consider only closest hit on a plane or oriented point.
+                        // Cap the number of objects created. This avoids overloading both the
+                        // rendering system and ARCore.
+                        if (anchors.size() >= 20) {
+                            anchors.get(0).detach();
+                            anchors.remove(0);
+                        }
+
+                        // Adding an Anchor tells ARCore that it should track this position in
+                        // space. This anchor is created on the Plane to place the 3D model
+                        // in the correct position relative both to the world and to the plane.
+
+                        anchors.add(hit.createAnchor());
+
+                        break;
+                    }
+                }
+            }
 
             // Draw background.
             backgroundRenderer.draw(frame);
@@ -307,37 +306,37 @@ public class SurfacesActivity extends AppCompatActivity implements GLSurfaceView
             // using it.
             pointCloud.release();
 
-            // Check if we detected at least one plane. If so, hide the loading message.
-            if (messageSnackbarHelper.isShowing()) {
-                for (Plane plane : session.getAllTrackables(Plane.class)) {
-                    if (plane.getType() == com.google.ar.core.Plane.Type.HORIZONTAL_UPWARD_FACING
-                            && plane.getTrackingState() == TrackingState.TRACKING) {
-                        messageSnackbarHelper.hide(this);
-                        break;
-                    }
-                }
-            }
-
-            // Visualize planes.
-            planeRenderer.drawPlanes(
-                    session.getAllTrackables(Plane.class), camera.getDisplayOrientedPose(), projmtx);
-
-//            // Visualize anchors created by touch.
-//            float scaleFactor = 1.0f;
-//            for (Anchor anchor : anchors) {
-//                if (anchor.getTrackingState() != TrackingState.TRACKING) {
-//                    continue;
+//            // Check if we detected at least one plane. If so, hide the loading message.
+//            if (messageSnackbarHelper.isShowing()) {
+//                for (Plane plane : session.getAllTrackables(Plane.class)) {
+//                    if (plane.getType() == com.google.ar.core.Plane.Type.HORIZONTAL_UPWARD_FACING
+//                            && plane.getTrackingState() == TrackingState.TRACKING) {
+//                        messageSnackbarHelper.hide(this);
+//                        break;
+//                    }
 //                }
-//                // Get the current pose of an Anchor in world space. The Anchor pose is updated
-//                // during calls to session.update() as ARCore refines its estimate of the world.
-//                anchor.getPose().toMatrix(anchorMatrix, 0);
-//
-//                // Update and draw the model and its shadow.
-//                virtualObject.updateModelMatrix(anchorMatrix, scaleFactor);
-//                virtualObjectShadow.updateModelMatrix(anchorMatrix, scaleFactor);
-//                virtualObject.draw(viewmtx, projmtx, colorCorrectionRgba);
-//                virtualObjectShadow.draw(viewmtx, projmtx, colorCorrectionRgba);
 //            }
+
+//            // Visualize planes.
+//            planeRenderer.drawPlanes(
+//                    session.getAllTrackables(Plane.class), camera.getDisplayOrientedPose(), projmtx);
+
+            // Visualize anchors created by touch.
+            float scaleFactor = 1.0f;
+            for (Anchor anchor : anchors) {
+                if (anchor.getTrackingState() != TrackingState.TRACKING) {
+                    continue;
+                }
+                // Get the current pose of an Anchor in world space. The Anchor pose is updated
+                // during calls to session.update() as ARCore refines its estimate of the world.
+                anchor.getPose().toMatrix(anchorMatrix, 0);
+
+                // Update and draw the model and its shadow.
+                virtualObject.updateModelMatrix(anchorMatrix, scaleFactor);
+                virtualObjectShadow.updateModelMatrix(anchorMatrix, scaleFactor);
+                virtualObject.draw(viewmtx, projmtx, colorCorrectionRgba);
+                virtualObjectShadow.draw(viewmtx, projmtx, colorCorrectionRgba);
+            }
 
         } catch (Throwable t) {
             // Avoid crashing the application due to unhandled exceptions.
@@ -345,3 +344,4 @@ public class SurfacesActivity extends AppCompatActivity implements GLSurfaceView
         }
     }
 }
+
