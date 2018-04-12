@@ -53,4 +53,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnHorizonalSurface"
         app:layout_constraintVertical_bias="0.033" />
+
+    <Button
+        android:id="@+id/btnUserInteraction"
+        android:layout_width="196dp"
+        android:layout_height="55dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="User Interaction"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.13"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnOrientedPoints"
+        app:layout_constraintVertical_bias="0.029" />
 </android.support.constraint.ConstraintLayout>

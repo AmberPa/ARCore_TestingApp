@@ -376,4 +376,10 @@ public class ObjectRenderer {
     v[1] *= reciprocalLength;
     v[2] *= reciprocalLength;
   }
+
+  public void rotateObject(float rotationAngle, float x, float y){
+    Matrix.translateM(modelMatrix, 0, x, y, 0);
+    Matrix.rotateM(modelMatrix, 0, rotationAngle, 0f, 1f, 0f);
+    Matrix.translateM(modelMatrix, 0, -x, -y, -0);
+  }
 }
